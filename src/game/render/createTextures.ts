@@ -67,7 +67,7 @@ function drawIsometricBox(
     new Phaser.Geom.Point(x + width - slant, faceY),
   ], true)
 
-  graphics.lineStyle(2, dark, 0.48)
+  graphics.lineStyle(1, dark, 0.3)
   graphics.strokePoints([
     new Phaser.Geom.Point(x, faceY),
     new Phaser.Geom.Point(x + slant, topY),
@@ -84,6 +84,12 @@ function drawIsometricBox(
     graphics.lineBetween(x + 5, topY + 4, x + width - 10, topY + 4)
     graphics.lineBetween(x + 9, topY + 8, x + width - 14, topY + 8)
   }
+
+  // A restrained highlight keeps the procedural stand-in closer to glazed patisserie icing.
+  graphics.fillStyle(0xffffff, 0.2)
+  graphics.fillEllipse(x + width * 0.31, topY + 2, Math.max(11, width * 0.42), 5)
+  graphics.fillStyle(0xffffff, 0.1)
+  graphics.fillEllipse(x + width * 0.2, faceY + 16, Math.max(7, width * 0.18), 10)
 
   if (kind === 'cream') {
     graphics.fillStyle(0xfff7e9, 0.92)
@@ -108,7 +114,7 @@ function drawIsometricBox(
 
   if (kind === 'square') {
     if (cake.id === 'mung-bean' && variant === 'whole') {
-      graphics.lineStyle(2, dark, 0.48)
+      graphics.lineStyle(1, dark, 0.28)
       graphics.strokeEllipse(38, topY + 5, 22, 11)
       graphics.lineBetween(31, topY + 5, 45, topY + 5)
     } else if (cake.id === 'osmanthus' && variant === 'whole') {
@@ -155,11 +161,13 @@ function drawPeachPastry(graphics: Phaser.GameObjects.Graphics, cake: CakeConfig
   graphics.fillCircle(37, 38, variant === 'whole' ? 12 : 9)
   graphics.fillStyle(dark, 0.88)
   graphics.fillCircle(37, 38, 4)
-  graphics.lineStyle(2, light, 0.65)
+  graphics.lineStyle(1, light, 0.5)
   petals.forEach((index) => {
     const angle = (Math.PI * 2 * index) / 6
     graphics.lineBetween(37, 38, 37 + Math.cos(angle) * 18, 38 + Math.sin(angle) * 15)
   })
+  graphics.fillStyle(0xffffff, 0.22)
+  graphics.fillEllipse(29, 31, 14, 6)
 }
 
 function fillHalfEllipse(
@@ -191,7 +199,7 @@ function drawMooncake(graphics: Phaser.GameObjects.Graphics, cake: CakeConfig, v
   graphics.fillStyle(base, 1)
   if (variant === 'whole') graphics.fillEllipse(37, 35, 58, 42)
   else fillHalfEllipse(graphics, 37, 35, 29, 21, left)
-  graphics.lineStyle(2, light, 0.75)
+  graphics.lineStyle(1, light, 0.58)
   if (variant === 'whole') {
     graphics.strokeEllipse(37, 35, 46, 31)
     graphics.strokeEllipse(37, 35, 21, 14)
@@ -199,7 +207,7 @@ function drawMooncake(graphics: Phaser.GameObjects.Graphics, cake: CakeConfig, v
       const angle = (Math.PI * 2 * index) / 8
       graphics.lineBetween(37 + Math.cos(angle) * 13, 35 + Math.sin(angle) * 8, 37 + Math.cos(angle) * 21, 35 + Math.sin(angle) * 14)
     }
-    graphics.lineStyle(2, light, 0.85)
+    graphics.lineStyle(1, light, 0.65)
     graphics.strokeCircle(37, 35, 6)
     graphics.lineBetween(33, 29, 31, 24)
     graphics.lineBetween(41, 29, 43, 24)
@@ -239,6 +247,8 @@ function drawPlate(graphics: Phaser.GameObjects.Graphics): void {
     const angle = (Math.PI * 2 * index) / 8
     graphics.lineBetween(37, 35, 37 + Math.cos(angle) * 16, 35 + Math.sin(angle) * 10)
   }
+  graphics.fillStyle(0xffffff, 0.2)
+  graphics.fillEllipse(27, 27, 15, 6)
 }
 
 function drawParticle(graphics: Phaser.GameObjects.Graphics, fill: number, shape: 'crumb' | 'spark' | 'powder'): void {
@@ -252,6 +262,9 @@ function drawParticle(graphics: Phaser.GameObjects.Graphics, fill: number, shape
 
 export function createPlaceholderTextures(scene: Phaser.Scene): void {
   CAKES.forEach((cake) => {
+    // Production PNGs are loaded in GameScene.preload. Only generate the old
+    // procedural set when a browser fails to load a cake asset.
+    if (scene.textures.exists(cake.texture)) return
     const variants = [['whole', cake.texture], ['left', cake.leftTexture], ['right', cake.rightTexture]] as const
     variants.forEach(([variant, key]) => ensureTexture(scene, key, (graphics) => drawCake(graphics, cake, variant)))
   })
@@ -260,11 +273,47 @@ export function createPlaceholderTextures(scene: Phaser.Scene): void {
     graphics.fillRoundedRect(10, 15, 56, 46, 7)
   })
   ensureTexture(scene, 'hazard-plate', drawPlate)
-  ensureTexture(scene, 'particle-crumb', (graphics) => drawParticle(graphics, 0xd5aa70, 'crumb'), 12, 12)
-  ensureTexture(scene, 'particle-spark', (graphics) => drawParticle(graphics, 0xf2d09b, 'spark'), 12, 12)
-  ensureTexture(scene, 'particle-powder', (graphics) => drawParticle(graphics, 0xfff3ef, 'powder'), 12, 12)
-  ensureTexture(scene, 'particle-petal', (graphics) => drawParticle(graphics, 0xe9b6cc, 'powder'), 12, 12)
-  ensureTexture(scene, 'particle-sugar', (graphics) => drawParticle(graphics, 0xc99c82, 'crumb'), 12, 12)
-  ensureTexture(scene, 'particle-cream', (graphics) => drawParticle(graphics, 0xfff9f2, 'powder'), 12, 12)
-  ensureTexture(scene, 'particle-moon', (graphics) => drawParticle(graphics, 0xe8c47b, 'spark'), 12, 12)
+  ensureTexture(scene, 'particle-crumb', (graphics) => drawParticle(graphics, 0xc8b47d, 'crumb'), 12, 12)
+  ensureTexture(scene, 'particle-spark', (graphics) => drawParticle(graphics, 0xe6bd91, 'spark'), 12, 12)
+  ensureTexture(scene, 'particle-powder', (graphics) => drawParticle(graphics, 0xf6e4df, 'powder'), 12, 12)
+  ensureTexture(scene, 'particle-petal', (graphics) => drawParticle(graphics, 0xdca7b6, 'powder'), 12, 12)
+  ensureTexture(scene, 'particle-sugar', (graphics) => drawParticle(graphics, 0xb77c67, 'crumb'), 12, 12)
+  ensureTexture(scene, 'particle-cream', (graphics) => drawParticle(graphics, 0xfff4e8, 'powder'), 12, 12)
+  ensureTexture(scene, 'particle-moon', (graphics) => drawParticle(graphics, 0xd8ad68, 'spark'), 12, 12)
+}
+
+function createHalfTexture(
+  scene: Phaser.Scene,
+  sourceKey: string,
+  targetKey: string,
+  side: 'left' | 'right',
+): void {
+  if (scene.textures.exists(targetKey)) return
+  const sourceTexture = scene.textures.get(sourceKey)
+  const source = sourceTexture.getSourceImage() as HTMLImageElement | HTMLCanvasElement
+  const width = source.width || (source as HTMLImageElement).naturalWidth
+  const height = source.height || (source as HTMLImageElement).naturalHeight
+  if (!width || !height) return
+  const canvasTexture = scene.textures.createCanvas(targetKey, width, height)
+  if (!canvasTexture) return
+  const context = canvasTexture.context
+  context.clearRect(0, 0, width, height)
+  context.save()
+  context.beginPath()
+  context.rect(side === 'left' ? 0 : width / 2, 0, width / 2, height)
+  context.clip()
+  context.drawImage(source, 0, 0, width, height)
+  context.restore()
+  // A slim cream edge suggests the fresh cut without changing the sprite's hitbox.
+  context.fillStyle = 'rgba(255, 246, 231, 0.7)'
+  context.fillRect(width / 2 - 2, height * 0.2, 4, height * 0.58)
+  canvasTexture.refresh()
+}
+
+export function createAssetSplitTextures(scene: Phaser.Scene): void {
+  CAKES.forEach((cake) => {
+    if (!scene.textures.exists(cake.texture)) return
+    createHalfTexture(scene, cake.texture, cake.leftTexture, 'left')
+    createHalfTexture(scene, cake.texture, cake.rightTexture, 'right')
+  })
 }

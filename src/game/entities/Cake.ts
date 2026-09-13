@@ -14,7 +14,9 @@ export class Cake extends Phaser.Physics.Arcade.Sprite {
 
     scene.add.existing(this)
     scene.physics.add.existing(this)
-    this.setScale(config.scale)
+    // Generated production PNGs are high-resolution; normalize them to the
+    // original gameplay footprint so hit radii and spawn rhythm stay intact.
+    this.setScale((76 / Math.max(this.width, 1)) * config.scale)
     this.setDepth(10)
     this.setCircle(
       Math.max(12, config.hitRadius),

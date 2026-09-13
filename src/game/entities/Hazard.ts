@@ -8,6 +8,7 @@ export class Hazard extends Phaser.Physics.Arcade.Sprite {
     super(scene, x, y, 'hazard-plate')
     scene.add.existing(this)
     scene.physics.add.existing(this)
+    this.setScale(76 / Math.max(this.width, 1))
     this.setCircle(this.hitRadius, 36 - this.hitRadius, 36 - this.hitRadius)
     this.setDepth(4)
     this.setImmovable(true)

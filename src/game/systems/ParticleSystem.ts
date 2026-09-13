@@ -22,14 +22,14 @@ export class ParticleSystem {
 
   public burst(x: number, y: number, particleType: ParticleType, intensity = 1): void {
     const texture = PARTICLE_TEXTURES[particleType]
-    const count = Math.min(24, Math.max(4, Math.round(8 * Math.max(0.25, intensity))))
+    const count = Math.min(20, Math.max(4, Math.round(7 * Math.max(0.25, intensity))))
     const emitter = this.scene.add.particles(0, 0, texture, {
       emitting: false,
       quantity: count,
-      lifespan: { min: 260, max: 560 },
-      speed: { min: 45, max: 145 },
+      lifespan: { min: 280, max: 620 },
+      speed: { min: 38, max: 128 },
       angle: { min: 200, max: 340 },
-      gravityY: 170,
+      gravityY: 155,
       scale: { start: 1, end: 0.15 },
       alpha: { start: 0.9, end: 0 },
       rotate: { min: -180, max: 180 },

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>可爱杀糕局 · Coquette Fantasy Patisserie</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #6f4d4a;
+      --muted: #9c7775;
+      --cream: #fffaf4;
+      --blush: #f8d8d7;
+      --gold: #b99363;
+      --line: rgba(151, 109, 101, .24);
+      --shadow: 0 24px 60px rgba(115, 73, 66, .16);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", "Songti SC", serif;
+      background:
+        radial-gradient(circle at 14% 8%, rgba(255,255,255,.94), transparent 30%),
+        linear-gradient(135deg, #f7e5e3 0%, #fffaf3 48%, #f4e6dc 100%);
+    }
+
+    .page { width: min(1380px, calc(100% - 40px)); margin: 0 auto; padding: 56px 0 80px; }
+    .masthead { max-width: 760px; margin-bottom: 42px; }
+    .eyebrow { margin: 0 0 12px; color: var(--gold); font: 700 11px/1.4 Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: clamp(36px, 6vw, 76px); font-weight: 500; letter-spacing: -.05em; }
+    .dek { max-width: 650px; margin: 18px 0 0; color: var(--muted); font-size: 18px; line-height: 1.65; }
+    .direction { margin-top: 58px; }
+    .direction-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+    .direction-heading h2 { margin: 0; font-size: 29px; font-weight: 500; }
+    .direction-heading p { margin: 0; color: var(--muted); font-size: 14px; }
+    .boards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+    figure { margin: 0; }
+    .board { position: relative; overflow: hidden; border: 1px solid rgba(177, 130, 112, .35); border-radius: 28px; background: #edd6d1; box-shadow: var(--shadow); }
+    .board::after { content: ""; position: absolute; inset: 14px; pointer-events: none; border: 1px solid rgba(255,255,255,.56); border-radius: 20px; mix-blend-mode: screen; }
+    .scene { position: relative; isolation: isolate; min-height: 540px; background-image: var(--scene); background-size: cover; background-position: center; }
+    .scene::before { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(180deg, rgba(255,250,247,.04), rgba(81,42,44,.24)); }
+    .board-portrait .scene { aspect-ratio: 4 / 5; min-height: 0; }
+    .board-landscape .scene { aspect-ratio: 16 / 9; min-height: 0; }
+    .scene-label { position: absolute; top: 26px; left: 28px; z-index: 2; padding: 6px 10px; border: 1px solid rgba(255,255,255,.7); border-radius: 999px; color: #fffaf4; background: rgba(98, 57, 54, .28); font: 700 10px/1 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; backdrop-filter: blur(8px); }
+    .state-rail { position: absolute; right: 22px; bottom: 22px; left: 22px; z-index: 2; display: grid; gap: 10px; }
+    .board-portrait .state-rail { grid-template-columns: 1fr; max-width: 250px; margin: auto; }
+    .board-landscape .state-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; }
+    .state { min-height: 76px; padding: 13px 15px 14px; border: 1px solid rgba(255,255,255,.72); border-radius: 17px; color: var(--ink); background: rgba(255, 249, 242, .9); box-shadow: 0 10px 22px rgba(77, 42, 43, .12); backdrop-filter: blur(12px); }
+    .state.home { border-color: rgba(255, 222, 221, .95); background: rgba(255, 232, 231, .9); }
+    .state.playing { background: rgba(240, 249, 245, .9); }
+    .state.game-over { background: rgba(255, 246, 226, .93); }
+    .state-kicker { display: block; margin-bottom: 7px; color: var(--gold); font: 700 9px/1 Arial, sans-serif; letter-spacing: .17em; }
+    .state strong { display: block; font-size: 18px; font-weight: 500; }
+    .state small { display: block; margin-top: 4px; color: var(--muted); font: 12px/1.35 Arial, sans-serif; }
+    .cta { display: inline-block; margin-top: 9px; padding: 5px 12px; border: 1px solid var(--gold); border-radius: 999px; color: #fffaf4; background: #c98d91; font: 700 11px/1 Arial, sans-serif; }
+    figcaption { padding: 14px 6px 0; color: var(--muted); font: 12px/1.5 Arial, sans-serif; }
+    figcaption b { color: var(--ink); }
+    .footer-note { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font: 12px/1.6 Arial, sans-serif; }
+
+    @media (max-width: 820px) {
+      .page { width: min(100% - 24px, 620px); padding-top: 34px; }
+      .boards { grid-template-columns: 1fr; }
+      .board-landscape .scene { aspect-ratio: 16 / 10; }
+      .direction-heading { display: block; }
+      .direction-heading p { margin-top: 5px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="masthead">
+      <p class="eyebrow">KE AI SHA GAO JU / VISUAL EXPLORATION</p>
+      <h1>Coquette Fantasy Patisserie</h1>
+      <p class="dek">六张隔离的状态合成板：底图负责甜品世界、光线和空间层次，HTML 叠加负责《可爱杀糕局》的 Home、Playing / HUD 与 Game Over 文案。</p>
+    </header>
+
+    <section class="direction">
+      <div class="direction-heading"><h2>01 · Ribbon Window Patisserie</h2><p>晨光、缎带与雕花牌匾</p></div>
+      <div class="boards">
+        <figure><div class="board board-portrait"><div class="scene" style="--scene: url('./boards/ribbon-window-portrait.png')"><span class="scene-label">PORTRAIT · 4:5</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>KE AI SHA GAO JU · 今日宜大开杀糕</small><span class="cta">开糕</span></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️　飞行区保持清爽</small></div><div class="state game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>BEST TODAY 430　·　再来一局</small></div></div></div></div><figcaption><b>Portrait board</b> · 竖版更强调牌匾、前景蕾丝与主视觉蛋糕。</figcaption></figure>
+        <figure><div class="board board-landscape"><div class="scene" style="--scene: url('./boards/ribbon-window-landscape.png')"><span class="scene-label">LANDSCAPE · 16:9</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>今日糕单 · 开糕</small></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️</small></div><div class="state game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>再来一局</small></div></div></div></div><figcaption><b>Landscape board</b> · 横版让切糕飞行区与左右蛋糕陈列形成包围感。</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="direction">
+      <div class="direction-heading"><h2>02 · Conservatory Tea Garden</h2><p>玻璃温室、月洞窗与茶点</p></div>
+      <div class="boards">
+        <figure><div class="board board-portrait"><div class="scene" style="--scene: url('./boards/conservatory-tea-portrait.png')"><span class="scene-label">PORTRAIT · 4:5</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>KE AI SHA GAO JU · 今日糕单</small><span class="cta">开糕</span></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️　茶园飞行区</small></div><div class="state game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>BEST TODAY 430　·　返回首页</small></div></div></div></div><figcaption><b>Portrait board</b> · 竖版保留温室纵深，中心留白可承接细小 HUD。</figcaption></figure>
+        <figure><div class="board board-landscape"><div class="scene" style="--scene: url('./boards/conservatory-tea-landscape.png')"><span class="scene-label">LANDSCAPE · 16:9</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>今日糕单 · 开糕</small></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️</small></div><div class="state.game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>再来一局</small></div></div></div></div><figcaption><b>Landscape board</b> · 横版的中央桌面最适合作为干净切糕区。</figcaption></figure>
+      </div>
+    </section>
+
+    <section class="direction">
+      <div class="direction-heading"><h2>03 · Powder Room Dessert Atelier</h2><p>蕾丝、珍珠与收藏感</p></div>
+      <div class="boards">
+        <figure><div class="board board-portrait"><div class="scene" style="--scene: url('./boards/powder-room-portrait.png')"><span class="scene-label">PORTRAIT · 4:5</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>KE AI SHA GAO JU · 梦幻甜点台</small><span class="cta">开糕</span></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️　切糕进行中</small></div><div class="state game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>BEST TODAY 430　·　再来一局</small></div></div></div></div><figcaption><b>Portrait board</b> · 竖版突出徽章感牌匾、多层展示台和高装饰密度。</figcaption></figure>
+        <figure><div class="board board-landscape"><div class="scene" style="--scene: url('./boards/powder-room-landscape.png')"><span class="scene-label">LANDSCAPE · 16:9</span><div class="state-rail"><div class="state home"><span class="state-kicker">HOME</span><strong>可爱杀糕局</strong><small>今日糕单 · 开糕</small></div><div class="state playing"><span class="state-kicker">PLAYING / HUD</span><strong>430　60s</strong><small>❤️ ❤️ ❤️</small></div><div class="state game-over"><span class="state-kicker">GAME OVER</span><strong>甜点台收工</strong><small>再来一局</small></div></div></div></div><figcaption><b>Landscape board</b> · 横版用两侧甜点陈列包住中央切糕路径，适合桌面端。</figcaption></figure>
+      </div>
+    </section>
+
+    <p class="footer-note">Exploration only · 不接入正式 App，不修改现有 React / Phaser 机制。选择方向后，再进入正式视觉实现。</p>
+  </main>
+</body>
+</html>

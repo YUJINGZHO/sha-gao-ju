@@ -3,13 +3,14 @@ import GameOverScreen from './components/GameOverScreen'
 import GameHUD from './components/GameHUD'
 import HomeScreen from './components/HomeScreen'
 import { GameBridge, type HudState } from './game/GameBridge'
+import { DEFAULT_LEVEL } from './game/data/levels'
 import { load, save } from './utils/storage'
 import './styles/ui.css'
 
 type AppState = 'MENU' | 'PLAYING' | 'GAME_OVER'
 
-const BEST_SCORE_KEY = 'sha-gao-ju:best-score'
-const INITIAL_HUD: HudState = { score: 0, timeLeft: 60, lives: 3 }
+const BEST_SCORE_KEY = 'ke-ai-sha-gao-ju:best-score'
+const INITIAL_HUD: HudState = { score: 0, timeLeft: DEFAULT_LEVEL.durationMs / 1000, lives: DEFAULT_LEVEL.maxLives }
 const PhaserGame = lazy(() => import('./components/PhaserGame'))
 
 export default function App() {

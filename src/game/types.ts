@@ -28,3 +28,21 @@ export interface ComboResult {
   bonusScore: number
   displayMessage: string
 }
+
+export interface LevelDifficulty {
+  untilSecond: number
+  interval: number
+  minCount: number
+  maxCount: number
+  hazardChance: number
+  maxActive: number
+}
+
+export interface LevelConfig {
+  id: string
+  durationMs: number
+  maxLives: number
+  cakeIds: readonly CakeId[]
+  platePenalty: number
+  difficulty: readonly LevelDifficulty[]
+}

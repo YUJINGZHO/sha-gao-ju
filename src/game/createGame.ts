@@ -1,12 +1,14 @@
 import Phaser from 'phaser'
+import { DEFAULT_LEVEL } from './data/levels'
 import type { GameBridge } from './GameBridge'
 import { GameScene } from './GameScene'
+import type { LevelConfig } from './types'
 
-export function createGame(parent: HTMLElement, bridge: GameBridge): Phaser.Game {
+export function createGame(parent: HTMLElement, bridge: GameBridge, level: LevelConfig = DEFAULT_LEVEL): Phaser.Game {
   return new Phaser.Game({
     type: Phaser.AUTO,
     parent,
-    backgroundColor: '#f2e9cf',
+    backgroundColor: '#f4e3df',
     transparent: false,
     antialias: true,
     render: { roundPixels: false, powerPreference: 'high-performance' },
@@ -21,6 +23,6 @@ export function createGame(parent: HTMLElement, bridge: GameBridge): Phaser.Game
       default: 'arcade',
       arcade: { gravity: { x: 0, y: 920 }, debug: false },
     },
-    scene: [new GameScene(bridge)],
+    scene: [new GameScene(bridge, level)],
   })
 }

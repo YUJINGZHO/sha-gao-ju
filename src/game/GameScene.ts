@@ -1,21 +1,24 @@
 import Phaser from 'phaser'
-import { CAKES, type CakeConfig } from './data/cakes'
+import { CAKES, getCakeConfig, type CakeConfig } from './data/cakes'
+import { DEFAULT_LEVEL } from './data/levels'
 import { AudioSystem } from './audio/AudioSystem'
 import { Cake } from './entities/Cake'
 import { Hazard } from './entities/Hazard'
 import type { GameBridge } from './GameBridge'
-import { createPlaceholderTextures } from './render/createTextures'
+import { createAssetSplitTextures, createPlaceholderTextures } from './render/createTextures'
 import { ComboSystem } from './systems/ComboSystem'
 import { ParticleSystem, type ParticleType } from './systems/ParticleSystem'
 import { SliceSystem, type SliceTarget } from './systems/SliceSystem'
-
-const ROUND_DURATION_MS = 60_000
-const MAX_LIVES = 3
+import { addScore, applyPlatePenalty } from './systems/scoreRules'
+import type { LevelConfig } from './types'
+const CHINESE_UI_FONT = 'STKaiti, Kaiti SC, KaiTi, Songti SC, serif'
+const DISPLAY_SCORE_FONT = 'Bodoni Moda Variable, Bodoni Moda, Georgia, Times New Roman, serif'
 
 type FlyingObject = Cake | Hazard
 
 export class GameScene extends Phaser.Scene {
   private readonly bridge: GameBridge
+  private readonly level: LevelConfig
   private readonly cakes = new Set<Cake>()
   private readonly hazards = new Set<Hazard>()
   private readonly fragments = new Set<Phaser.Physics.Arcade.Image>()
@@ -25,22 +28,38 @@ export class GameScene extends Phaser.Scene {
   private particleSystem?: ParticleSystem
   private audioSystem?: AudioSystem
   private background?: Phaser.GameObjects.Graphics
+  private backgroundImage?: Phaser.GameObjects.Image
   private elapsedMs = 0
   private lastSpawnMs = -700
-  private lastShownSecond = 60
+  private lastShownSecond: number
   private score = 0
-  private lives = MAX_LIVES
+  private lives: number
   private objectSequence = 0
   private isEnding = false
 
-  constructor(bridge: GameBridge) {
+  constructor(bridge: GameBridge, level: LevelConfig = DEFAULT_LEVEL) {
     super('game')
     this.bridge = bridge
+    this.level = level
+    this.lastShownSecond = Math.ceil(level.durationMs / 1000)
+    this.lives = level.maxLives
+  }
+
+  preload(): void {
+    this.load.image('reference-gameplay-portrait', '/art/reference-gameplay-portrait.png')
+    this.load.image('reference-gameplay-landscape', '/art/reference-gameplay-landscape.png')
+    CAKES.forEach((cake) => {
+      this.load.image(cake.texture, `/art/cakes/${cake.id}.png`)
+      this.load.image(cake.leftTexture, `/art/cakes/${cake.id}-left.png`)
+      this.load.image(cake.rightTexture, `/art/cakes/${cake.id}-right.png`)
+    })
+    this.load.image('hazard-plate', '/art/cakes/hazard-plate.png')
   }
 
   create(): void {
     this.physics.world.gravity.y = this.gravityForHeight(this.scale.height)
     createPlaceholderTextures(this)
+    createAssetSplitTextures(this)
     this.drawBackground()
 
     this.comboSystem = new ComboSystem()
@@ -59,10 +78,10 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.dispose, this)
 
     this.add.text(this.scale.width / 2, this.scale.height - 42, '按住并快速划过糕点', {
-      fontFamily: 'ui-rounded, SF Pro Rounded, Microsoft YaHei, sans-serif',
+      fontFamily: CHINESE_UI_FONT,
       fontSize: '14px',
-      color: '#7d5c60',
-      backgroundColor: '#fff8f2e8',
+      color: '#8f6973',
+      backgroundColor: '#fffdf7e8',
       padding: { x: 12, y: 7 },
     }).setOrigin(0.5).setDepth(90).setName('gesture-hint')
 
@@ -81,7 +100,7 @@ export class GameScene extends Phaser.Scene {
     this.sliceSystem?.update(time)
     this.cleanupObjects()
 
-    const remainingMs = Math.max(0, ROUND_DURATION_MS - this.elapsedMs)
+    const remainingMs = Math.max(0, this.level.durationMs - this.elapsedMs)
     const shownSecond = Math.ceil(remainingMs / 1000)
     if (shownSecond !== this.lastShownSecond) {
       this.lastShownSecond = shownSecond
@@ -177,13 +196,12 @@ export class GameScene extends Phaser.Scene {
     const { x, y, rotation, config } = cake
     this.removeCake(cake)
 
-    this.score += config.score
+    this.score = addScore(this.score, config.score)
     this.comboSystem?.registerSlice()
     this.createCakeHalves(config, x, y, rotation, velocity, angle)
     this.particleSystem?.burst(x, y, config.particleType as ParticleType, 1 + Math.min(speed, 2) * 0.25)
     this.showFloatingScore(x, y, `+${config.score}`)
     this.cameras.main.shake(58, 0.0015)
-    this.cameras.main.flash(45, 255, 232, 235, true)
     this.audioSystem?.playSlice()
     this.emitHud()
   }
@@ -204,7 +222,7 @@ export class GameScene extends Phaser.Scene {
 
     texturePairs.forEach(({ texture, side }) => {
       const fragment = this.physics.add.image(x + side * 5, y, texture)
-      fragment.setScale(config.scale)
+      fragment.setScale((76 / Math.max(fragment.width, 1)) * config.scale)
       fragment.setRotation(rotation)
       fragment.setDepth(9)
       fragment.setVelocity(
@@ -225,10 +243,11 @@ export class GameScene extends Phaser.Scene {
     hazard.setVelocity(hazard.body?.velocity.x ?? 0, 160)
     hazard.setAngularVelocity(520)
     this.particleSystem?.burst(x, y, 'spark', 1.6)
-    this.showCallout(x, y, '盘子也切了', '#bd6f7d')
-    this.cameras.main.shake(160, 0.007)
+    this.score = applyPlatePenalty(this.score, this.level.platePenalty)
+    this.showCallout(x, y, `盘子滑倒了\n-${this.level.platePenalty}`, '#a85661')
+    this.cameras.main.shake(120, 0.004)
     this.audioSystem?.playHazard()
-    this.loseLife()
+    this.emitHud()
   }
 
   private finishGesture(): void {
@@ -236,7 +255,7 @@ export class GameScene extends Phaser.Scene {
     const result = this.comboSystem.endGesture()
     if (result.count < 2) return
 
-    this.score += result.bonusScore
+    this.score = addScore(this.score, result.bonusScore)
     const label = result.bonusScore > 0
       ? `${result.displayMessage}\n连击 x${result.count}  +${result.bonusScore}`
       : `${result.displayMessage}\n连击 x${result.count}`
@@ -249,10 +268,10 @@ export class GameScene extends Phaser.Scene {
 
   private showFloatingScore(x: number, y: number, label: string): void {
     const text = this.add.text(x, y, label, {
-      fontFamily: 'ui-rounded, SF Pro Rounded, Microsoft YaHei, sans-serif',
+      fontFamily: DISPLAY_SCORE_FONT,
       fontSize: '22px',
-      color: '#6b4a4d',
-      stroke: '#fff8f2',
+      color: '#7d5a63',
+      stroke: '#fffdf7',
       strokeThickness: 5,
     }).setOrigin(0.5).setDepth(80)
     this.tweens.add({
@@ -268,10 +287,10 @@ export class GameScene extends Phaser.Scene {
 
   private showCallout(x: number, y: number, label: string, color: string): void {
     const text = this.add.text(x, y, label, {
-      fontFamily: 'ui-rounded, SF Pro Rounded, Microsoft YaHei, sans-serif',
+      fontFamily: CHINESE_UI_FONT,
       fontSize: `${Math.max(18, Math.min(28, this.scale.width * 0.04))}px`,
       color,
-      stroke: '#fff8f2',
+      stroke: '#fffdf7',
       strokeThickness: 6,
       align: 'center',
     }).setOrigin(0.5).setDepth(85).setAngle(-4)
@@ -280,10 +299,10 @@ export class GameScene extends Phaser.Scene {
 
   private showCombo(label: string, count: number): void {
     const text = this.add.text(this.scale.width / 2, this.scale.height * 0.36, label, {
-      fontFamily: 'ui-rounded, SF Pro Rounded, Microsoft YaHei, sans-serif',
+      fontFamily: DISPLAY_SCORE_FONT,
       fontSize: `${Math.min(48, 25 + count * 4)}px`,
-      color: '#bd6f7d',
-      stroke: '#fff8f2',
+      color: '#a85661',
+      stroke: '#fffdf7',
       strokeThickness: 8,
       align: 'center',
       lineSpacing: 7,
@@ -306,7 +325,7 @@ export class GameScene extends Phaser.Scene {
       if (!cake.active || cake.y <= bottom || !body || body.velocity.y <= 0) continue
       this.removeCake(cake)
       this.audioSystem?.playMiss()
-      this.showCallout(Phaser.Math.Clamp(cake.x, 90, this.scale.width - 90), this.scale.height - 100, '糕糕溜走了', '#bd6f7d')
+      this.showCallout(Phaser.Math.Clamp(cake.x, 90, this.scale.width - 90), this.scale.height - 100, '糕糕溜走了', '#a85661')
       this.loseLife()
     }
 
@@ -353,20 +372,19 @@ export class GameScene extends Phaser.Scene {
   }
 
   private pickCake(): CakeConfig {
-    const totalWeight = CAKES.reduce((sum, cake) => sum + cake.weight, 0)
+    const cakes = this.level.cakeIds.map((id) => getCakeConfig(id))
+    const totalWeight = cakes.reduce((sum, cake) => sum + cake.weight, 0)
     let cursor = Math.random() * totalWeight
-    for (const cake of CAKES) {
+    for (const cake of cakes) {
       cursor -= cake.weight
       if (cursor <= 0) return cake
     }
-    return CAKES[CAKES.length - 1]
+    return cakes[cakes.length - 1] ?? CAKES[CAKES.length - 1]
   }
 
-  private getDifficulty(elapsedSeconds: number): { interval: number; minCount: number; maxCount: number; hazardChance: number; maxActive: number } {
-    if (elapsedSeconds < 15) return { interval: 860, minCount: 1, maxCount: 1, hazardChance: 0.035, maxActive: 6 }
-    if (elapsedSeconds < 30) return { interval: 700, minCount: 1, maxCount: 2, hazardChance: 0.05, maxActive: 8 }
-    if (elapsedSeconds < 45) return { interval: 565, minCount: 1, maxCount: 3, hazardChance: 0.06, maxActive: 10 }
-    return { interval: 470, minCount: 2, maxCount: 4, hazardChance: 0.065, maxActive: 13 }
+  private getDifficulty(elapsedSeconds: number): LevelConfig['difficulty'][number] {
+    return this.level.difficulty.find(({ untilSecond }) => elapsedSeconds < untilSecond)
+      ?? this.level.difficulty[this.level.difficulty.length - 1]
   }
 
   private gravityForHeight(height: number): number {
@@ -385,39 +403,18 @@ export class GameScene extends Phaser.Scene {
 
   private drawBackground(): void {
     this.background?.destroy()
+    this.backgroundImage?.destroy()
     const width = this.scale.width
     const height = this.scale.height
+    const backgroundKey = width < height ? 'reference-gameplay-portrait' : 'reference-gameplay-landscape'
+    const backgroundImage = this.add.image(width / 2, height / 2, backgroundKey).setOrigin(0.5).setDepth(-25).setAlpha(0.98)
+    backgroundImage.setScale(Math.max(width / backgroundImage.width, height / backgroundImage.height))
+    this.backgroundImage = backgroundImage
     const graphics = this.add.graphics().setDepth(-20)
-    graphics.fillStyle(0xfff8f2, 1)
+    graphics.fillStyle(0xfffaf7, 0.055)
     graphics.fillRect(0, 0, width, height)
-    graphics.fillStyle(0xf4ccd8, 0.3)
-    graphics.fillCircle(width * 0.86, height * 0.15, Math.min(width, height) * 0.2)
-    graphics.fillStyle(0xdfead6, 0.58)
-    graphics.fillEllipse(width * 0.08, height * 0.77, width * 0.5, height * 0.28)
-    graphics.fillStyle(0xe4def0, 0.3)
-    graphics.fillCircle(width * 0.6, height * 0.53, Math.min(width, height) * 0.2)
-
-    graphics.fillStyle(0xf8e8df, 0.66)
-    graphics.fillRect(0, height * 0.79, width, height * 0.21)
-    graphics.lineStyle(2, 0xe2bdc8, 0.35)
-    graphics.lineBetween(0, height * 0.79, width, height * 0.79)
-
-    const windowX = width * 0.17
-    const windowY = height * 0.18
-    const windowRadius = Math.min(width, height) * 0.16
-    graphics.lineStyle(3, 0xc895a7, 0.17)
-    graphics.beginPath()
-    graphics.arc(windowX, windowY, windowRadius, Math.PI, 0)
-    graphics.strokePath()
-    graphics.lineBetween(windowX - windowRadius, windowY, windowX - windowRadius, windowY + windowRadius * 1.35)
-    graphics.lineBetween(windowX + windowRadius, windowY, windowX + windowRadius, windowY + windowRadius * 1.35)
-    graphics.lineBetween(windowX, windowY - windowRadius, windowX, windowY + windowRadius * 1.35)
-    graphics.lineBetween(windowX - windowRadius, windowY + windowRadius * 0.56, windowX + windowRadius, windowY + windowRadius * 0.56)
-
-    graphics.fillStyle(0xe8b7c5, 0.18)
-    graphics.fillCircle(width * 0.78, height * 0.77, 8)
-    graphics.fillCircle(width * 0.82, height * 0.77, 5)
-    graphics.fillCircle(width * 0.8, height * 0.73, 6)
+    graphics.fillStyle(0xffdbe0, 0.05)
+    graphics.fillCircle(width * 0.52, height * 0.48, Math.min(width, height) * 0.34)
     this.background = graphics
   }
 

@@ -118,13 +118,13 @@ export class SliceSystem {
       const alpha = (1 - age) * (index / this.points.length)
       const width = Phaser.Math.Clamp(3 + point.speed * 5.5, 4, 11)
 
-      this.trail.lineStyle(width + 3, 0x263329, alpha * 0.18)
+      this.trail.lineStyle(width + 4, 0x9d6878, alpha * 0.12)
       this.trail.beginPath()
       this.trail.moveTo(previous.x, previous.y)
       this.trail.lineTo(point.x, point.y)
       this.trail.strokePath()
 
-      this.trail.lineStyle(width, 0xfff8df, alpha * 0.95)
+      this.trail.lineStyle(width, 0xfffdf7, alpha * 0.98)
       this.trail.beginPath()
       this.trail.moveTo(previous.x, previous.y)
       this.trail.lineTo(point.x, point.y)
