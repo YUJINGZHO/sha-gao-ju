@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState, type CSSProperties } from 'react'
 import GameOverScreen from './components/GameOverScreen'
 import GameHUD from './components/GameHUD'
 import HomeScreen from './components/HomeScreen'
@@ -12,6 +12,14 @@ type AppState = 'MENU' | 'PLAYING' | 'GAME_OVER'
 const BEST_SCORE_KEY = 'ke-ai-sha-gao-ju:best-score'
 const INITIAL_HUD: HudState = { score: 0, timeLeft: DEFAULT_LEVEL.durationMs / 1000, lives: DEFAULT_LEVEL.maxLives }
 const PhaserGame = lazy(() => import('./components/PhaserGame'))
+
+const ASSET_STYLES = {
+  '--sg-home-bg-landscape': `url("${import.meta.env.BASE_URL}art/home/home-background-landscape.png")`,
+  '--sg-home-bg-portrait': `url("${import.meta.env.BASE_URL}art/home/home-background-portrait.png")`,
+  '--sg-over-bg-landscape': `url("${import.meta.env.BASE_URL}art/game-over-background-landscape.png")`,
+  '--sg-over-bg-portrait': `url("${import.meta.env.BASE_URL}art/game-over-background-portrait.png")`,
+  '--sg-home-start-button': `url("${import.meta.env.BASE_URL}art/home/home-start-button.png")`,
+} as CSSProperties
 
 export default function App() {
   const [screen, setScreen] = useState<AppState>('MENU')
@@ -58,7 +66,7 @@ export default function App() {
   }, [screen, startGame])
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" style={ASSET_STYLES}>
       {screen === 'MENU' && <HomeScreen bestScore={bestScore} onStart={startGame} />}
       {screen === 'PLAYING' && (
         <main className="game-stage">

@@ -11,6 +11,7 @@ import { ParticleSystem, type ParticleType } from './systems/ParticleSystem'
 import { SliceSystem, type SliceTarget } from './systems/SliceSystem'
 import { addScore, applyPlatePenalty } from './systems/scoreRules'
 import type { LevelConfig } from './types'
+import { assetUrl } from '../utils/assets'
 const CHINESE_UI_FONT = 'STKaiti, Kaiti SC, KaiTi, Songti SC, serif'
 const DISPLAY_SCORE_FONT = 'Bodoni Moda Variable, Bodoni Moda, Georgia, Times New Roman, serif'
 const TEXT_RESOLUTION = Math.min(window.devicePixelRatio || 1, 2)
@@ -64,14 +65,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('play-background-portrait', '/art/play/play-background-portrait.png')
-    this.load.image('play-background-landscape', '/art/play/play-background-landscape.png')
+    this.load.image('play-background-portrait', assetUrl('play/play-background-portrait.png'))
+    this.load.image('play-background-landscape', assetUrl('play/play-background-landscape.png'))
     CAKES.forEach((cake) => {
-      this.load.image(cake.texture, `/art/cakes/${cake.id}.png`)
-      this.load.image(cake.leftTexture, `/art/cakes/${cake.id}-left.png`)
-      this.load.image(cake.rightTexture, `/art/cakes/${cake.id}-right.png`)
+      this.load.image(cake.texture, assetUrl(`cakes/${cake.id}.png`))
+      this.load.image(cake.leftTexture, assetUrl(`cakes/${cake.id}-left.png`))
+      this.load.image(cake.rightTexture, assetUrl(`cakes/${cake.id}-right.png`))
     })
-    this.load.image('hazard-plate', '/art/cakes/hazard-plate.png')
+    this.load.image('hazard-plate', assetUrl('cakes/hazard-plate.png'))
   }
 
   create(): void {

@@ -348,8 +348,8 @@
   filter: saturate(.98) contrast(.98);
 }
 
-.sg-home-scene { background-image: url('/art/home/home-background-landscape.png'); }
-.sg-over-scene { background-image: url('/art/game-over-background-landscape.png'); }
+.sg-home-scene { background-image: var(--sg-home-bg-landscape); }
+.sg-over-scene { background-image: var(--sg-over-bg-landscape); }
 
 .sg-home-scene::after,
 .sg-over-scene::after {
@@ -419,8 +419,8 @@
 @media (max-width: 700px) {
   .sg-home-scene,
   .sg-over-scene { background-position: 50% center; }
-  .sg-home-scene { background-image: url('/art/home/home-background-portrait.png'); }
-  .sg-over-scene { background-image: url('/art/game-over-background-portrait.png'); }
+  .sg-home-scene { background-image: var(--sg-home-bg-portrait); }
+  .sg-over-scene { background-image: var(--sg-over-bg-portrait); }
 }
 
 /* The supplied landscape plate already contains the main frame and menu plaque. */
@@ -1276,7 +1276,7 @@
   border-radius: 0;
   color: #fffaf7;
   background-color: transparent;
-  background-image: url('/art/home/home-start-button.png');
+  background-image: var(--sg-home-start-button);
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -2062,7 +2062,7 @@
 .sg-screen.sg-game-over .sg-game-over-artboard .sg-button-primary:hover,
 .sg-screen.sg-game-over .sg-game-over-artboard .sg-button-primary:focus-visible {
   background-color: transparent;
-  background-image: url('/art/home/home-start-button.png');
+  background-image: var(--sg-home-start-button);
   background-position: center;
   background-repeat: no-repeat;
   background-size: 100% 100%;
@@ -2605,7 +2605,7 @@
    HTML owns the live title, score, button, and today's menu. */
 @media (orientation: portrait) {
   .sg-home-scene {
-    background-image: url('/art/home/home-background-portrait.png');
+    background-image: var(--sg-home-bg-portrait);
     background-position: center;
     background-size: 100% 100%;
   }
@@ -2946,11 +2946,23 @@
 
 /* The generated plaque has a deeper lower floral ornament; lift the live
    content group so the final row stays inside the paper opening. */
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-content {
+  position: relative;
+  top: -3cqw;
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  transform: rotate(-1deg);
+  transform-origin: center center;
+}
+
 .sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading,
 .sg-screen.sg-home-screen .sg-home-artboard .sg-menu-rule,
 .sg-screen.sg-home-screen .sg-home-artboard .sg-treats-list {
   position: relative;
-  top: -3cqw;
+  top: 0;
 }
 
 .sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item {

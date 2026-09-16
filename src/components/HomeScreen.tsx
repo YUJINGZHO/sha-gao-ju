@@ -1,6 +1,7 @@
 import type { FC } from 'react'
 import { CAKE_CONFIGS } from '../game/data/cakes'
 import type { CakeId } from '../game/types'
+import { assetUrl } from '../utils/assets'
 
 interface HomeScreenProps {
   bestScore: number
@@ -19,7 +20,7 @@ const HOME_MENU_IDS: readonly CakeId[] = [
 const HOME_MENU_ITEMS = HOME_MENU_IDS.map((id) => ({
   id,
   name: CAKE_CONFIGS[id].name,
-  image: `/art/cakes/${id}.png`,
+  image: assetUrl(`cakes/${id}.png`),
 }))
 
 const HomeScreen: FC<HomeScreenProps> = ({ bestScore, onStart }) => (
@@ -35,7 +36,7 @@ const HomeScreen: FC<HomeScreenProps> = ({ bestScore, onStart }) => (
         <p className="sg-home-lede">今天，切一块最漂亮的糕。</p>
 
         <div className="sg-home-meta" aria-label={`历史最高分 ${bestScore} 分`}>
-          <img className="sg-score-plaque-art" src="/art/home/home-score-plaque.png" alt="" aria-hidden="true" />
+          <img className="sg-score-plaque-art" src={assetUrl('home/home-score-plaque.png')} alt="" aria-hidden="true" />
           <span className="sg-meta-label">BEST SCORE</span>
           <strong className="sg-score-value">{bestScore.toLocaleString('zh-CN')}</strong>
         </div>
@@ -46,19 +47,21 @@ const HomeScreen: FC<HomeScreenProps> = ({ bestScore, onStart }) => (
         <p className="sg-key-hint"><kbd>ENTER</kbd> 或轻触开始</p>
       </section>
       <aside className="sg-treats-card" aria-label="今日糕单">
-        <div className="sg-menu-heading">
-          <strong>今日糕单</strong>
-          <span>TODAY'S PATISSERIE</span>
+        <div className="sg-menu-content">
+          <div className="sg-menu-heading">
+            <strong>今日糕单</strong>
+            <span>TODAY'S PATISSERIE</span>
+          </div>
+          <div className="sg-menu-rule" aria-hidden="true"><i />♡<i /></div>
+          <ul className="sg-treats-list">
+            {HOME_MENU_ITEMS.map((item) => (
+              <li className="sg-menu-item" key={item.id}>
+                <img src={item.image} alt="" />
+                <span className="sg-menu-item-name">{item.name}</span>
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="sg-menu-rule" aria-hidden="true"><i />♡<i /></div>
-        <ul className="sg-treats-list">
-          {HOME_MENU_ITEMS.map((item) => (
-            <li className="sg-menu-item" key={item.id}>
-              <img src={item.image} alt="" />
-              <span className="sg-menu-item-name">{item.name}</span>
-            </li>
-          ))}
-        </ul>
       </aside>
       <p className="sg-home-footer">60 秒 · 划动切糕 · 小心糕盘</p>
     </div>
