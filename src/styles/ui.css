@@ -2825,3 +2825,146 @@
     display: none;
   }
 }
+
+/* Final safety pass: keep the rotated plaque's live rows inside its inner opening. */
+.sg-screen.sg-home-screen .sg-home-artboard .sg-button-mark {
+  display: none !important;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-treats-card {
+  padding: 13% 3% 11%;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading,
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-rule {
+  flex: 0 0 auto;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-treats-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  grid-template-rows: repeat(6, minmax(0, 1fr));
+  align-content: stretch;
+  gap: clamp(1px, .25cqw, 4px);
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item {
+  min-width: 0;
+  min-height: 0;
+  align-items: center;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item-name {
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: nowrap;
+  font-size: clamp(.64rem, 1.15cqw, .9rem);
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* The canvas is pale by design, so give live Play copy a stable dark ink edge. */
+.game-stage .sg-hud {
+  color: #5f3d3d;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .98), 0 0 4px rgba(255, 255, 255, .86);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.game-stage .sg-hud-label {
+  color: #704847;
+  font-size: clamp(.64rem, 1.15vw, .82rem);
+  font-weight: 600;
+}
+
+.game-stage .sg-hud-score,
+.game-stage .sg-hud-timer strong {
+  color: #633f3f;
+  font-size: clamp(1.65rem, 3.2vw, 2.85rem);
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .98), 0 0 5px rgba(255, 255, 255, .9);
+}
+
+@media (max-width: 700px) {
+  .game-stage .sg-hud-label {
+    font-size: clamp(.64rem, 2.2vw, .78rem);
+  }
+
+  .game-stage .sg-hud-score,
+  .game-stage .sg-hud-timer strong {
+    font-size: clamp(1.5rem, 6.5vw, 2rem);
+  }
+}
+
+/* Home uses contain, not cover: preserve the generated plate's proportions and
+   use calm cream letterboxing when the viewport ratio is unusually narrow. */
+.sg-screen.sg-home-screen {
+  background: #f4e5df;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard {
+  width: min(100vw, calc(100dvh * 1442 / 1091));
+  height: min(100dvh, calc(100vw * 1091 / 1442));
+  max-width: 100vw;
+  max-height: 100dvh;
+}
+
+@media (orientation: portrait) {
+  .sg-screen.sg-home-screen .sg-home-artboard {
+    width: min(100vw, calc(100dvh * 1122 / 1402));
+    height: min(100dvh, calc(100vw * 1402 / 1122));
+  }
+}
+
+/* Final menu safe area: padding is expressed in artboard units, not the
+   viewport, so the plaque keeps the same internal rhythm at every size. */
+.sg-screen.sg-home-screen .sg-home-artboard .sg-treats-card {
+  padding: 13cqw 2.5cqw 4cqw;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading {
+  line-height: 1.05;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading strong {
+  line-height: 1.1;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading span {
+  line-height: 1;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-rule {
+  margin: 2cqw 0;
+  line-height: 1;
+}
+
+/* The generated plaque has a deeper lower floral ornament; lift the live
+   content group so the final row stays inside the paper opening. */
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-heading,
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-rule,
+.sg-screen.sg-home-screen .sg-home-artboard .sg-treats-list {
+  position: relative;
+  top: -3cqw;
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item {
+  grid-template-columns: clamp(12px, 2.4cqw, 28px) minmax(0, 1fr);
+  gap: clamp(2px, .3cqw, 6px);
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item img {
+  width: clamp(12px, 2.2cqw, 26px);
+  height: clamp(12px, 2.2cqw, 26px);
+}
+
+.sg-screen.sg-home-screen .sg-home-artboard .sg-menu-item-name {
+  font-size: clamp(.36rem, 1.05cqw, .82rem);
+  letter-spacing: -.06em;
+  line-height: 1;
+}

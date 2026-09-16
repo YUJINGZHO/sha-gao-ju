@@ -13,6 +13,7 @@ import { addScore, applyPlatePenalty } from './systems/scoreRules'
 import type { LevelConfig } from './types'
 const CHINESE_UI_FONT = 'STKaiti, Kaiti SC, KaiTi, Songti SC, serif'
 const DISPLAY_SCORE_FONT = 'Bodoni Moda Variable, Bodoni Moda, Georgia, Times New Roman, serif'
+const TEXT_RESOLUTION = Math.min(window.devicePixelRatio || 1, 2)
 
 type FlyingObject = Cake | Hazard
 
@@ -96,10 +97,13 @@ export class GameScene extends Phaser.Scene {
 
     this.add.text(this.scale.width / 2, this.scale.height - 42, '按住，轻轻划过糕点～', {
       fontFamily: CHINESE_UI_FONT,
-      fontSize: '14px',
-      color: '#8f6973',
-      backgroundColor: '#fffdf7e8',
-      padding: { x: 12, y: 7 },
+      fontSize: '16px',
+      color: '#70464a',
+      stroke: '#fffdf7',
+      strokeThickness: 3,
+      resolution: TEXT_RESOLUTION,
+      backgroundColor: '#fffdf7f2',
+      padding: { x: 14, y: 8 },
     }).setOrigin(0.5).setDepth(90).setName('gesture-hint')
 
     this.time.delayedCall(3200, () => {
@@ -287,9 +291,10 @@ export class GameScene extends Phaser.Scene {
     const text = this.add.text(x, y, label, {
       fontFamily: DISPLAY_SCORE_FONT,
       fontSize: '22px',
-      color: '#7d5a63',
+      color: '#654447',
       stroke: '#fffdf7',
-      strokeThickness: 5,
+      strokeThickness: 6,
+      resolution: TEXT_RESOLUTION,
     }).setOrigin(0.5).setDepth(80)
     this.tweens.add({
       targets: text,
@@ -308,7 +313,8 @@ export class GameScene extends Phaser.Scene {
       fontSize: `${Math.max(18, Math.min(28, this.scale.width * 0.04))}px`,
       color,
       stroke: '#fffdf7',
-      strokeThickness: 6,
+      strokeThickness: 7,
+      resolution: TEXT_RESOLUTION,
       align: 'center',
     }).setOrigin(0.5).setDepth(85).setAngle(-4)
     this.tweens.add({ targets: text, y: y - 80, alpha: 0, duration: 760, ease: 'Back.Out', onComplete: () => text.destroy() })
@@ -320,7 +326,8 @@ export class GameScene extends Phaser.Scene {
       fontSize: `${Math.min(48, 25 + count * 4)}px`,
       color: '#a85661',
       stroke: '#fffdf7',
-      strokeThickness: 8,
+      strokeThickness: 9,
+      resolution: TEXT_RESOLUTION,
       align: 'center',
       lineSpacing: 7,
     }).setOrigin(0.5).setDepth(86).setScale(0.55).setAngle(Phaser.Math.Between(-3, 3))

@@ -42,7 +42,6 @@ const HomeScreen: FC<HomeScreenProps> = ({ bestScore, onStart }) => (
 
         <button className="sg-button sg-button-primary" type="button" onClick={onStart}>
           开糕
-          <span className="sg-button-mark" aria-hidden="true">✦</span>
         </button>
         <p className="sg-key-hint"><kbd>ENTER</kbd> 或轻触开始</p>
       </section>
