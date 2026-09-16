@@ -10,7 +10,7 @@
 
 ## 场景基准
 
-- 当前 `public/art/reference-gameplay-portrait.png` 与 `reference-gameplay-landscape.png` 是 Gameplay 背景基准，不重做、不加复杂装饰。
+- 当前 `public/art/play/play-background-portrait.png` 与 `play-background-landscape.png` 是 Gameplay 背景；它们与 Home / Game Over 共用奶油白、blush 粉和香槟金边框语言，边框约占画布 90%，镜内保留连续的安全操作区。
 - 背景保持低对比、奶油白与淡 blush 色温、柔焦窗光、软 bokeh 和轻微建筑轮廓。
 - 镜内 Gameplay 区必须比外部环境更安静；可操作糕点是镜内最清晰、最容易辨认的物体。
 - 保持前景 / 中景 / 背景层次，但不得让装饰性糕点混入玩法区域。

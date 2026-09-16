@@ -3,10 +3,10 @@ import type { ComboResult } from '../types'
 const BONUS_BY_COUNT: Readonly<Record<number, number>> = { 1: 0, 2: 10, 3: 30, 4: 60, 5: 100 }
 
 const MESSAGE_BY_COUNT: Readonly<Record<number, string>> = {
-  2: '双杀糕！',
-  3: '糕手！',
-  4: '杀疯了！',
-  5: '糕！手！降！临！',
+  2: '双糕出动！',
+  3: '三糕撒花！',
+  4: '甜甜连击！',
+  5: '糕糕大胜利！',
 }
 
 /** Counts slices belonging to one drag/gesture, then awards its combo once. */

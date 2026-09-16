@@ -16,6 +16,23 @@ const DISPLAY_SCORE_FONT = 'Bodoni Moda Variable, Bodoni Moda, Georgia, Times Ne
 
 type FlyingObject = Cake | Hazard
 
+type PlaySafeArea = {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+type PlaySafeRect = PlaySafeArea & {
+  width: number
+  height: number
+}
+
+const PLAY_SAFE_AREAS = {
+  landscape: { left: 0.1, right: 0.9, top: 0.17, bottom: 0.84 },
+  portrait: { left: 0.11, right: 0.89, top: 0.14, bottom: 0.88 },
+} as const
+
 export class GameScene extends Phaser.Scene {
   private readonly bridge: GameBridge
   private readonly level: LevelConfig
@@ -27,8 +44,8 @@ export class GameScene extends Phaser.Scene {
   private comboSystem?: ComboSystem
   private particleSystem?: ParticleSystem
   private audioSystem?: AudioSystem
-  private background?: Phaser.GameObjects.Graphics
   private backgroundImage?: Phaser.GameObjects.Image
+  private playSafeRect: PlaySafeRect = { left: 0, right: 0, top: 0, bottom: 0, width: 0, height: 0 }
   private elapsedMs = 0
   private lastSpawnMs = -700
   private lastShownSecond: number
@@ -46,8 +63,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('reference-gameplay-portrait', '/art/reference-gameplay-portrait.png')
-    this.load.image('reference-gameplay-landscape', '/art/reference-gameplay-landscape.png')
+    this.load.image('play-background-portrait', '/art/play/play-background-portrait.png')
+    this.load.image('play-background-landscape', '/art/play/play-background-landscape.png')
     CAKES.forEach((cake) => {
       this.load.image(cake.texture, `/art/cakes/${cake.id}.png`)
       this.load.image(cake.leftTexture, `/art/cakes/${cake.id}-left.png`)
@@ -77,7 +94,7 @@ export class GameScene extends Phaser.Scene {
     this.scale.on(Phaser.Scale.Events.RESIZE, this.handleResize, this)
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.dispose, this)
 
-    this.add.text(this.scale.width / 2, this.scale.height - 42, '按住并快速划过糕点', {
+    this.add.text(this.scale.width / 2, this.scale.height - 42, '按住，轻轻划过糕点～', {
       fontFamily: CHINESE_UI_FONT,
       fontSize: '14px',
       color: '#8f6973',
@@ -121,15 +138,14 @@ export class GameScene extends Phaser.Scene {
 
   private spawnWave(minCount: number, maxCount: number, hazardChance: number): void {
     const count = Phaser.Math.Between(minCount, maxCount)
-    const usableWidth = this.scale.width * 0.7
-    const baseX = this.scale.width * 0.15
     for (let index = 0; index < count; index += 1) {
       this.time.delayedCall(index * 58, () => {
         if (this.isEnding) return
-        const laneNoise = Phaser.Math.FloatBetween(-0.08, 0.08) * this.scale.width
+        const currentSafeRect = this.getSafeRect()
+        const laneNoise = Phaser.Math.FloatBetween(-0.08, 0.08) * currentSafeRect.width
         const laneX = count === 1
-          ? Phaser.Math.FloatBetween(baseX, baseX + usableWidth)
-          : baseX + usableWidth * ((index + 0.5) / count) + laneNoise
+          ? Phaser.Math.FloatBetween(currentSafeRect.left, currentSafeRect.right)
+          : currentSafeRect.left + currentSafeRect.width * ((index + 0.5) / count) + laneNoise
         if (Math.random() < hazardChance && this.hazards.size < 2) this.spawnHazard(laneX)
         else this.spawnCake(laneX)
       })
@@ -162,9 +178,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private launchVelocity(x: number): Phaser.Math.Vector2 {
-    const width = this.scale.width
+    const safeRect = this.getSafeRect()
+    const width = safeRect.width
     const height = this.scale.height
-    const inwardBias = x < width * 0.4 ? 65 : x > width * 0.6 ? -65 : 0
+    const inwardBias = x < safeRect.left + safeRect.width * 0.35 ? 65 : x > safeRect.left + safeRect.width * 0.65 ? -65 : 0
     const vx = Phaser.Math.Between(Math.round(-width * 0.16), Math.round(width * 0.16)) + inwardBias
     const minUp = Math.max(570, Math.min(820, height * 0.78))
     const maxUp = Math.max(700, Math.min(980, height * 0.98))
@@ -244,7 +261,7 @@ export class GameScene extends Phaser.Scene {
     hazard.setAngularVelocity(520)
     this.particleSystem?.burst(x, y, 'spark', 1.6)
     this.score = applyPlatePenalty(this.score, this.level.platePenalty)
-    this.showCallout(x, y, `盘子滑倒了\n-${this.level.platePenalty}`, '#a85661')
+    this.showCallout(x, y, `盘子打翻啦\n-${this.level.platePenalty}`, '#a85661')
     this.cameras.main.shake(120, 0.004)
     this.audioSystem?.playHazard()
     this.emitHud()
@@ -319,13 +336,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   private cleanupObjects(): void {
-    const bottom = this.scale.height + 105
+    const bottom = Math.min(this.scale.height + 105, this.getSafeRect().bottom + 105)
     for (const cake of this.cakes) {
       const body = cake.body as Phaser.Physics.Arcade.Body | null
       if (!cake.active || cake.y <= bottom || !body || body.velocity.y <= 0) continue
       this.removeCake(cake)
       this.audioSystem?.playMiss()
-      this.showCallout(Phaser.Math.Clamp(cake.x, 90, this.scale.width - 90), this.scale.height - 100, '糕糕溜走了', '#a85661')
+      this.showCallout(Phaser.Math.Clamp(cake.x, 90, this.scale.width - 90), this.scale.height - 100, '糕糕溜走啦～', '#a85661')
       this.loseLife()
     }
 
@@ -402,20 +419,51 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawBackground(): void {
-    this.background?.destroy()
     this.backgroundImage?.destroy()
     const width = this.scale.width
     const height = this.scale.height
-    const backgroundKey = width < height ? 'reference-gameplay-portrait' : 'reference-gameplay-landscape'
-    const backgroundImage = this.add.image(width / 2, height / 2, backgroundKey).setOrigin(0.5).setDepth(-25).setAlpha(0.98)
-    backgroundImage.setScale(Math.max(width / backgroundImage.width, height / backgroundImage.height))
+    const isPortrait = width < height
+    const backgroundKey = isPortrait ? 'play-background-portrait' : 'play-background-landscape'
+    const backgroundImage = this.add.image(width / 2, height / 2, backgroundKey).setOrigin(0.5).setDepth(-25)
+    const scale = Math.max(width / backgroundImage.width, height / backgroundImage.height)
+    backgroundImage.setScale(scale)
     this.backgroundImage = backgroundImage
-    const graphics = this.add.graphics().setDepth(-20)
-    graphics.fillStyle(0xfffaf7, 0.055)
-    graphics.fillRect(0, 0, width, height)
-    graphics.fillStyle(0xffdbe0, 0.05)
-    graphics.fillCircle(width * 0.52, height * 0.48, Math.min(width, height) * 0.34)
-    this.background = graphics
+    this.playSafeRect = this.mapSafeArea(
+      width,
+      height,
+      backgroundImage.width,
+      backgroundImage.height,
+      isPortrait ? PLAY_SAFE_AREAS.portrait : PLAY_SAFE_AREAS.landscape,
+    )
+  }
+
+  private getSafeRect(): PlaySafeRect {
+    if (this.playSafeRect.width > 0 && this.playSafeRect.height > 0) return this.playSafeRect
+    return {
+      left: this.scale.width * 0.1,
+      right: this.scale.width * 0.9,
+      top: this.scale.height * 0.17,
+      bottom: this.scale.height * 0.84,
+      width: this.scale.width * 0.8,
+      height: this.scale.height * 0.67,
+    }
+  }
+
+  private mapSafeArea(
+    width: number,
+    height: number,
+    imageWidth: number,
+    imageHeight: number,
+    area: PlaySafeArea,
+  ): PlaySafeRect {
+    const scale = Math.max(width / imageWidth, height / imageHeight)
+    const offsetX = (width - imageWidth * scale) / 2
+    const offsetY = (height - imageHeight * scale) / 2
+    const left = Phaser.Math.Clamp(offsetX + imageWidth * area.left * scale, 0, width)
+    const right = Phaser.Math.Clamp(offsetX + imageWidth * area.right * scale, 0, width)
+    const top = Phaser.Math.Clamp(offsetY + imageHeight * area.top * scale, 0, height)
+    const bottom = Phaser.Math.Clamp(offsetY + imageHeight * area.bottom * scale, 0, height)
+    return { left, right, top, bottom, width: Math.max(1, right - left), height: Math.max(1, bottom - top) }
   }
 
   private dispose(): void {
